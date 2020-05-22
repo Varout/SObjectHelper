@@ -65,6 +65,7 @@ List<Account> testAccounts = [SELECT :accountFields FROM Account];
 
 ## Schema.Picklist (Picklist Entry Methods)
 SObject detail taken from the Salesforce documentation page: <a href="https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_class_Schema_PicklistEntry.htm#apex_class_Schema_PicklistEntry" target="_blank">Salesforce: Schema.PicklistEntry</a>
+
 The following are methods for PicklistEntry. All are instance methods.
 
 - getLabel(): `String`
