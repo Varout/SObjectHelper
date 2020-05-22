@@ -60,6 +60,7 @@ public with sharing class SObjectUtil {
             throw new SObjectUtilException(errorString);
         }
 
+        this.fieldsUnique = new Set<String>();
         this.fieldsRequired = new Set<String>();
         this.mapDevNameToType = new Map<String, String>();
         this.mapPicklistValues = new Map<String, List<Schema.PicklistEntry>>();
@@ -78,8 +79,9 @@ public with sharing class SObjectUtil {
     /*  ****************************************  */
 
     /**
-     * Populates the public variables: 
+     * Populates the public variables:
      * - mapDevNameToType
+     * - fieldsUnique
      * - fieldsRequired
      * @param   String. API Name of the SObject to populate field
      *          name and type inforation for.
@@ -92,6 +94,11 @@ public with sharing class SObjectUtil {
             String fieldName = mapAccFields.get(fieldKey).getDescribe().getName();
             String fieldType = String.valueOf(mapAccFields.get(fieldKey).getDescribe().getType());
             this.mapDevNameToType.put(fieldName, fieldType);
+
+            //  Populates set of unique fields on the SObject
+            if (mapAccFields.get(fieldKey).getDescribe().isUnique()) {
+                this.fieldsUnique.add(mapAccFields.get(fieldKey).getDescribe().getName());
+            }
 
             //  Populates set of required fields on the SObject level
             if (!mapAccFields.get(fieldKey).getDescribe().isNillable()) {
