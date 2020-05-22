@@ -39,6 +39,7 @@ public with sharing class SObjectUtil {
 
     private SObjectType theSObjectDescribe { get; private set; }
     public String selectAllString { get; private set; }                 //  A comma separated string of all fields on the SObject. Intended to act as * for SOQL queries
+    public Set<String> fieldsUnique { get; private set; }               //  The DeveloperNames of unique fields on the SObject
     public Set<String> fieldsRequired { get; private set; }             //  The DeveloperNames of required fields on the SObject level
     public Map<String, Id> mapRecordTypeNameToId { get; private set; }  //  Maps the DeveloperName of a record type to its Id
     public Map<String, String> mapDevNameToType { get; private set; }   //  Maps the DeveloperName of a field to its field type (See: ENUM_FIELD_TYPES)
@@ -58,6 +59,10 @@ public with sharing class SObjectUtil {
             errorString += 'If you are using a custom object, remember to add the __c at the end. ';
             throw new SObjectUtilException(errorString);
         }
+
+        this.fieldsRequired = new Set<String>();
+        this.mapDevNameToType = new Map<String, String>();
+        this.mapPicklistValues = new Map<String, List<Schema.PicklistEntry>>();
 
         try {
             this.populateMapFieldInformation(sObjectType);
@@ -80,9 +85,6 @@ public with sharing class SObjectUtil {
      *          name and type inforation for.
      */
     private void populateMapFieldInformation(String theSObjectType) {
-        this.fieldsRequired = new Set<String>();
-        this.mapDevNameToType = new Map<String, String>();
-        this.mapPicklistValues = new Map<String, List<Schema.PicklistEntry>>();
         Map<String, Schema.SObjectField> mapAccFields = this.theSObjectDescribe.getDescribe().fields.getMap();
 
         for (String fieldKey : mapAccFields.keySet()) {
