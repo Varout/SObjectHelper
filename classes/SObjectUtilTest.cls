@@ -268,23 +268,44 @@ private class SObjectUtilTest {
      * CreatedDate, LastModifiedById, LastModifiedDate
      */
     @isTest
-    static void testRequiredFieldsList() {
+    static void testRequiredFieldsSet() {
         SObjectUtil accountUtil = new SObjectUtil('Account');
 
-        Integer expectedRequiredFields = accountUtil.requiredFields.size();
+        Integer expectedRequiredFields = accountUtil.fieldsRequired.size();
         Integer countedExistingFields = 0;
 
         for (String field : accountUtil.mapDevNameToType.keySet()) {
-            if (accountUtil.requiredFields.contains(field)) {
+            if (accountUtil.fieldsRequired.contains(field)) {
                 countedExistingFields += 1 ;
             }
         }
 
-        System.assertNotEquals(null, accountUtil.requiredFields);
+        System.assertNotEquals(null, accountUtil.fieldsRequired);
         System.assertNotEquals(0, expectedRequiredFields);
-        System.assert(accountUtil.requiredFields.contains('Id'));
-        System.assert(accountUtil.requiredFields.contains('Name'));
+        System.assert(accountUtil.fieldsRequired.contains('Id'));
+        System.assert(accountUtil.fieldsRequired.contains('Name'));
         System.assertEquals(expectedRequiredFields, countedExistingFields);
+    }
+
+    /**
+     * This is a hard one to successfully test as it depends on whether or not the object
+     * in the org has any fields that are marked as unique
+     */
+    @isTest
+    static void testUniqueFieldsSet() {
+        SObjectUtil accountUtil = new SObjectUtil('Account');
+
+        Integer expectedUniqueFields = accountUtil.fieldsUnique.size();
+        Integer countedExistingFields = 0;
+
+        for (String field : accountUtil.mapDevNameToType.keySet()) {
+            if (accountUtil.fieldsUnique.contains(field)) {
+                countedExistingFields += 1 ;
+            }
+        }
+
+        System.assertNotEquals(null, accountUtil.fieldsUnique);
+        System.assertEquals(expectedUniqueFields, countedExistingFields);
     }
 
 
@@ -307,4 +328,5 @@ private class SObjectUtilTest {
         }
         return sObjectsWithRts;
     }
+
 }
