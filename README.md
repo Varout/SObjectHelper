@@ -31,47 +31,49 @@ The util also gets information about available SObjects and if the Salesforce Or
 
 ### Public Variables
 
-| Name                  | Type                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:----------------------|:------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| selectAllString       | `String`                                  | Contains a comma separated string with all available fields on the object.  e.g "Id, Name, CreatedDate, CreatedById,..." to achieve the equivalent of `SELECT * FROM SObject` in Salesforce.                                                                                                                                                                                                                                                         |
-| mapRecordTypeNameToId | `Map<String, Id>`                         | The Key (String) is the DeveloperName of the record type. The Value (Id) is the Salesforce Id value for that record type.                                                                                                                                                                                                                                                                                                                            |
-| mapDevNameToType      | `Map<String, String>`                     | The Key (String) is the DeveloperName of a field on the SObject. The Value (String) is the data type of the field.                                                                                                                                                                                                                                                                                                                                   |
-| mapPicklistValues     | `Map<String, List<Schema.PicklistEntry>>` | The Key (String) is the name of a picklist field on the SObject. The Value (List<PicklistEntry>) is a list of PicklistEntry records for the picklist. Which can be used to populate a picklist with available options. More information: <a href="https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_class_Schema_PicklistEntry.htm#apex_class_Schema_PicklistEntry" target="_blank">Salesforce: Schema.PicklistEntry</a> |
-
+| Name                  | Type                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|:----------------------|:------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| selectAllString       | `String`                                  | Contains a comma separated string with all available fields for the SObject. e.g "Id, Name, CreatedDate, CreatedById, ..." to achieve the equivalent of `SELECT * FROM SObject` in Salesforce.                                                                                                                                                                                                                                                                |
+| mapRecordTypeNameToId | `Map<String, Id>`                         | The Key (String) is the DeveloperName of the record type. The Value (Id) is the Salesforce Id value for that record type.                                                                                                                                                                                                                                                                                                                                     |
+| mapDevNameToType      | `Map<String, String>`                     | The Key (String) is the DeveloperName of a field on the SObject. The Value (String) is the data type of the field.                                                                                                                                                                                                                                                                                                                                            |
+| mapPicklistValues     | `Map<String, List<Schema.PicklistEntry>>` | The Key (String) is the DeveloperName of a picklist field on the SObject. The Value (List<PicklistEntry>) is a list of PicklistEntry records for the picklist. Which can be used to populate a picklist with available options. More information: <a href="https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_class_Schema_PicklistEntry.htm#apex_class_Schema_PicklistEntry" target="_blank">Salesforce: Schema.PicklistEntry</a> |
+| requiredFields        | `Set<String>`                             | A set of Strings which are the DeveloperNames of required fields on the SObject level. Doesn't take into account fields that are required on page layouts.                                                                                                                                                                                                                                                                                                    |
 
 ## Quick How To Use
 
-Say we want to use Account as an example
+Say we want to use Account as an example.  Remember the `__c` if using a custom SObject.
 
-** Inititalise **
+**Inititalise**
 
 ```SObjectUtil accountUtil = new SObjectUtil('Account');```
 
 
-** Field String **
+**Field String**
 
 ```String accountFields = accountUtil.selectAllString;```
+```List<Account> testAccounts = [SELECT :accountUtil.selectAllString FROM Account];```
+```List<Account> testAccounts = [SELECT :accountFields FROM Account];```
 
 
 ## Schema.Picklist (Picklist Entry Methods)
-SObject detail taken from the Salesforce documentation page
+SObject detail taken from the Salesforce documentation page: <a href="https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_class_Schema_PicklistEntry.htm#apex_class_Schema_PicklistEntry" target="_blank">Salesforce: Schema.PicklistEntry</a>
 The following are methods for PicklistEntry. All are instance methods.
 
-- getLabel()
+- getLabel(): `String`
 
-`String`. Returns the display name of this item in the picklist.
-
-
-- getValue()
-
-`String`. Returns the value of this item in the picklist.
+Returns the display name of this item in the picklist.
 
 
-- isActive()
+- getValue(): `String`
 
-`Boolean`. Returns true if this item must be displayed in the drop-down list for the picklist field in the user interface, false otherwise.
+Returns the value of this item in the picklist.
 
 
-- isDefaultValue()
+- isActive(): `Boolean`
 
-`Boolean`. Returns true if this item is the default value for the picklist, false otherwise. Only one item in a picklist can be designated as the default.
+Returns true if this item must be displayed in the drop-down list for the picklist field in the user interface, false otherwise.
+
+
+- isDefaultValue(): `Boolean`
+
+Returns true if this item is the default value for the picklist, false otherwise. Only one item in a picklist can be designated as the default.
