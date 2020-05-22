@@ -8,6 +8,7 @@ This util class helps to get most useful information about an SObject. Including
 - Picklists, and the options available for each picklist (normal and multi)
 - A list of the object's fields and their types
 - A string with all fields on the object separated by commas, so that the equivalent to `SELECT * FROM SObject` can be used
+- A set of required fields and fields that need to have unique values
 
 The util also gets information about available SObjects and if the Salesforce Org uses Person Accounts.
 
@@ -38,7 +39,8 @@ The util also gets information about available SObjects and if the Salesforce Or
 | mapRecordTypeNameToId | `Map<String, Id>`                         | The Key (String) is the DeveloperName of the record type. The Value (Id) is the Salesforce Id value for that record type.                                                                                                                                                                                                                                                                                                                                     |
 | mapDevNameToType      | `Map<String, String>`                     | The Key (String) is the DeveloperName of a field on the SObject. The Value (String) is the data type of the field.                                                                                                                                                                                                                                                                                                                                            |
 | mapPicklistValues     | `Map<String, List<Schema.PicklistEntry>>` | The Key (String) is the DeveloperName of a picklist field on the SObject. The Value (List<PicklistEntry>) is a list of PicklistEntry records for the picklist. Which can be used to populate a picklist with available options. More information: <a href="https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_class_Schema_PicklistEntry.htm#apex_class_Schema_PicklistEntry" target="_blank">Salesforce: Schema.PicklistEntry</a> |
-| requiredFields        | `Set<String>`                             | A set of Strings which are the DeveloperNames of required fields on the SObject level. Doesn't take into account fields that are required on page layouts.                                                                                                                                                                                                                                                                                                    |
+| fieldsRequired        | `Set<String>`                             | A set of Strings which are the DeveloperNames of required fields on the SObject level. Doesn't take into account fields that are required on page layouts.                                                                                                                                                                                                                                                                                                    |
+| fieldsUnique          | `Set<String>`                             | A set of Strings which are the DeveloperNames of fields that need to be unique amongst all records for the SObject in Salesforce                                                                                                                                                                                                                                                                                                                              |
 
 
 ## Quick How To Use
@@ -47,16 +49,18 @@ Say we want to use Account as an example.  Remember the `__c` if using a custom 
 
 **Inititalise**
 
-```SObjectUtil accountUtil = new SObjectUtil('Account');```
+``` java
+SObjectUtil accountUtil = new SObjectUtil('Account');
+```
 
 
 **Field String**
 
-```String accountFields = accountUtil.selectAllString;```
-
-```List<Account> testAccounts = [SELECT :accountUtil.selectAllString FROM Account];```
-
-```List<Account> testAccounts = [SELECT :accountFields FROM Account];```
+``` java
+String accountFields = accountUtil.selectAllString;
+List<Account> testAccounts = [SELECT :accountUtil.selectAllString FROM Account];
+List<Account> testAccounts = [SELECT :accountFields FROM Account];
+```
 
 
 ## Schema.Picklist (Picklist Entry Methods)
