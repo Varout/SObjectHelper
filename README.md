@@ -19,6 +19,7 @@ The util also gets information about available SObjects and if the Salesforce Or
 | SObjectUtil.cls     | The utility class.   |
 | SObjectUtilTest.cls | The unit test class. |
 
+
 ## Available Functions
 
 ### Static Functions
@@ -39,6 +40,7 @@ The util also gets information about available SObjects and if the Salesforce Or
 | mapPicklistValues     | `Map<String, List<Schema.PicklistEntry>>` | The Key (String) is the DeveloperName of a picklist field on the SObject. The Value (List<PicklistEntry>) is a list of PicklistEntry records for the picklist. Which can be used to populate a picklist with available options. More information: <a href="https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_class_Schema_PicklistEntry.htm#apex_class_Schema_PicklistEntry" target="_blank">Salesforce: Schema.PicklistEntry</a> |
 | requiredFields        | `Set<String>`                             | A set of Strings which are the DeveloperNames of required fields on the SObject level. Doesn't take into account fields that are required on page layouts.                                                                                                                                                                                                                                                                                                    |
 
+
 ## Quick How To Use
 
 Say we want to use Account as an example.  Remember the `__c` if using a custom SObject.
@@ -51,7 +53,9 @@ Say we want to use Account as an example.  Remember the `__c` if using a custom 
 **Field String**
 
 ```String accountFields = accountUtil.selectAllString;```
+
 ```List<Account> testAccounts = [SELECT :accountUtil.selectAllString FROM Account];```
+
 ```List<Account> testAccounts = [SELECT :accountFields FROM Account];```
 
 
