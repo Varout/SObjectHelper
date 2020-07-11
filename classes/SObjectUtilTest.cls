@@ -23,7 +23,7 @@
  */
 @isTest
 private class SObjectUtilTest {
-    private static Set<String> PREFERRED_SOBJECTS = new Set<String>{'Account', 'Contact', 'Case', 'Lead', 'Opportunity', 'Order', 'Product2', 'Quote'};
+    static Set<String> PREFERRED_SOBJECTS = new Set<String>{'Account', 'Contact', 'Case', 'Lead', 'Opportunity', 'Order', 'Product2', 'Quote'};
 
     /*  ****************************************  */
     /*            Unit Test Functions             */
@@ -197,8 +197,6 @@ private class SObjectUtilTest {
                 System.assert(testSObjUtil.mapRecordTypeNameToId.keySet().contains(rt.Name));
                 System.assertEquals(rt.Id, testSObjUtil.mapRecordTypeNameToId.get(rt.Name));
             }
-    
-
 
         } else {
             //  Can't really be tested if no objects have Record Types set up
@@ -262,6 +260,34 @@ private class SObjectUtilTest {
 
 
     /**
+     * Tests the select all string functions for other lookups on the object
+     * Using Contract as the SObject as there are fields that need to be filtered out
+     * and are stored in the map: evilObjectFieldNames
+     */
+    @isTest
+    static void testSelectAllStringRelatedObject() {
+        String sObjectNameToTest = 'Contract';
+        SObjectUtil contractUtil = new SOBjectUtil(sObjectNameToTest);
+
+        //  We know that by default the address fields that are queried using Schema.SObjectType.getDescribe()
+        //  have both billing and shipping fields, however you may not be able to query the shipping fields
+        System.assertNotEquals(null, contractUtil.selectAllString);
+        System.assert(contractUtil.selectAllString.containsIgnoreCase('billingaddress'));
+        System.assert(!contractUtil.selectAllString.containsIgnoreCase('ShippingAddress'));
+
+        //  Next we want to make sure that we can get the fields for a lookup on Contract
+        //  Account should be a default lookup field on Contract, but we need to use AccountId
+        //  for the field name
+        String accountLookupQueryString = contractUtil.createQueryStringForRelatedSObject('AccountId');
+        System.assertNotEquals(null, accountLookupQueryString);
+
+        Set<String> setObjects = new Set<String>{'AccountId', 'OwnerId'};
+        List<String> listObjects = new List<String>{'AccountId', 'OwnerId'};
+        System.assertEquals(contractUtil.createQueryStringForRelatedSObjects(setObjects), contractUtil.createQueryStringForRelatedSObjects(listObjects));
+    }
+
+
+    /**
      * Tests that the required fields set is populated, all all fields in the set are
      * also listed as keys in SObjectUtil.mapDevNameToType. Using the Account SObject
      * at a minimum the following fields are required: Id, Name, OwnerId, CreatedById,
@@ -287,6 +313,28 @@ private class SObjectUtilTest {
         System.assertEquals(expectedRequiredFields, countedExistingFields);
     }
 
+
+    /**
+     * Tests the query string for lookup fields on a standard SObject
+     */
+    @isTest
+    static void testLookupQueryStringPopulate() {
+        //  Setup
+        SObjectUtil contractUtil = new SObjectUtil('Contract');
+        String sObjectNameFail = 'Account';
+        String sObjectNamePass = 'AccountId';
+
+        //  Test
+        String returnStringFail = contractUtil.createQueryStringForRelatedSObject(sObjectNameFail);
+        String returnStringPass = contractUtil.createQueryStringForRelatedSObject(sObjectnamePass);
+
+        //  Assert
+        System.assertEquals('', returnStringFail);
+        System.assert(returnStringPass.length() > 0);
+        System.assert(returnStringPass.contains(sObjectNamePass.removeEndIgnoreCase('Id')));
+    }
+
+
     /**
      * This is a hard one to successfully test as it depends on whether or not the object
      * in the org has any fields that are marked as unique
@@ -309,6 +357,24 @@ private class SObjectUtilTest {
     }
 
 
+    /**
+     * Tests to make sure the correct record type Id fields are being populated
+     */
+    @isTest
+    static void testGetDefaultRecordTypeId() {
+        SObjectUtil accountUtil = new SObjectUtil('Account');
+        SObjectUtil contactUtil = new SObjectUtil('Contact');
+
+        System.assertNotEquals(null, accountUtil.getDefaultRecordTypeId());
+        System.assertNotEquals(null, accountUtil.recordTypeIdDefault);
+        System.assertNotEquals(null, accountUtil.recordTypeIdMaster);
+
+        System.assertNotEquals(null, contactUtil.getDefaultRecordTypeId());
+        System.assertNotEquals(null, contactUtil.recordTypeIdDefault);
+        System.assertNotEquals(null, contactUtil.recordTypeIdMaster);
+    }
+
+
     /*  ****************************************  */
     /*             Private Functions              */
     /*  ****************************************  */
@@ -328,5 +394,4 @@ private class SObjectUtilTest {
         }
         return sObjectsWithRts;
     }
-
 }
