@@ -1,34 +1,35 @@
-# SObjectUtil
+# SObjectHelper
 
 ## What's It About?
 
 I wanted to be able to get certain bits of information on the fly using code with Salesforce. I was doing a lot of work with picklists at the time and wanted to put something together to help get the information I needed, faster.
-This util class helps to get most useful information about an SObject, essentially making it easier to get information from the `Schema` object. Including:
+This helper class is used to get information about an SObject, essentially making it easier to get information from the `Schema` object. Including:
 - Record types: Id and DeveloperName
 - Picklists, and the options available for each picklist (normal and multi)
 - A list of the object's fields and their types
 - A string with all fields on the object separated by commas, so that the equivalent to `SELECT * FROM SObject` can be used
+- A string with all fields for SObjects that are lookups on the selected SObject
 - A set of required fields and fields that need to have unique values
 
-The util also gets information about available SObjects and if the Salesforce Org uses Person Accounts.
+The helper also gets information about available SObjects and if the Salesforce Org uses Person Accounts.
 
 
 ## Files
 
-| File Name           | Description          |
-|:--------------------|:---------------------|
-| SObjectUtil.cls     | The utility class.   |
-| SObjectUtilTest.cls | The unit test class. |
+| File Name             | Description          |
+|:----------------------|:---------------------|
+| SObjectHelper.cls     | The helper class.    |
+| SObjectHelperTest.cls | The unit test class. |
 
 
 ## Available Functions
 
 ### Static Functions
 
-| Function                               | Return Type   | Description                                                           |
-|:---------------------------------------|:--------------|:----------------------------------------------------------------------|
-| `SObjectUtil.getSetOfOrgSObjects();`   | `Set<String>` | A set of all SObjects in the Salesforce Org. Including setup objects. |
-| `SObjectUtil.orgUsesPersonAccounts();` | `Boolean`     | Returns true if the Salesforce Org uses Person Accounts.              |
+| Function                                 | Return Type   | Description                                                           |
+|:-----------------------------------------|:--------------|:----------------------------------------------------------------------|
+| `SObjectHelper.getSetOfOrgSObjects();`   | `Set<String>` | A set of all SObjects in the Salesforce Org. Including setup objects. |
+| `SObjectHelper.orgUsesPersonAccounts();` | `Boolean`     | Returns true if the Salesforce Org uses Person Accounts.              |
 
 
 ### Public Non-Static Functions
@@ -54,30 +55,30 @@ The util also gets information about available SObjects and if the Salesforce Or
 ** Inititalise **
 
 ```Java
-SObjectUtil accountUtil = new SObjectUtil('Account');
+SObjectHelper accountHelper = new SObjectHelper('Account');
 ```
 
 ```Java
-SObjectUtil customObjectUtil = new SObjectUtil('MyCustomObject__c');
+SObjectHelper customObjectHelper = new SObjectHelper('MyCustomObject__c');
 ```
 
 
 ** Field String **
 
-For the main SObject that the util has been initiated with, this will return all fields for only that object:
+For the main SObject that the helper has been initiated with, this will return all fields for only that object:
 
 ```Java
-String accountFields = accountUtil.selectAllString;
+String accountFields = accountHelper.selectAllString;
 ```
 
 To get fields for all or specific objects that have Lookups or Master-Detail Lookups on this SObject:
 
 ```Java
-String contactFieldsOnAccount = accountUtil.createQueryStringForRelatedSObject('ContactId');
+String contactFieldsOnAccount = accountHelper.createQueryStringForRelatedSObject('ContactId');
 ```
 
 ```Java
-String customObjectFieldsOnAccount = accountUtil.createQueryStringForRelatedSObject('CustomObject__c');
+String customObjectFieldsOnAccount = accountHelper.createQueryStringForRelatedSObject('CustomObject__c');
 ```
 
 You can group multiple objects at time in a Set or List
@@ -87,18 +88,18 @@ List<String> sobjs = new List<String>{'ContactId', 'CustomObject__c'};
 ```
 
 ```Java
-String queryString = accountUtil.createQueryStringForRelatedObjects(sobjs);
+String queryString = accountHelper.createQueryStringForRelatedObjects(sobjs);
 ```
 
 _Example_
 
 ```Java
-SObjectUtil contractUtil = new SObjectUtil('Contract');
+SObjectHelper contractHelper = new SObjectHelper('Contract');
 Set<String> testSet = new Set<String>{'AccountId', 'CustoObj__c'};
 
 String queryString = '';
-queryString += 'SELECT ' + contractUtil.selectAllString + ',\n';
-queryString += contractUtil.createQueryStringForRelatedSObjects(testSet) + '\n';
+queryString += 'SELECT ' + contractHelper.selectAllString + ',\n';
+queryString += contractHelper.createQueryStringForRelatedSObjects(testSet) + '\n';
 queryString += ' FROM Contract';
 
 List<SObject> theResults = Database.query(queryString);

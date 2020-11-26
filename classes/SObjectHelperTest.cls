@@ -1,8 +1,8 @@
 /**
- * @class:   SObjectUtilTest.cls
+ * @class:   SObjectHelperTest.cls
  * @author:  Jason Auger
  * @github:  https://github.com/Varout/SObjectUtil
- * @desc:    Test class for SObjectUtil.cls
+ * @desc:    Test class for SObjectHelper.cls
  * @licence: Copyright (c) 2020, Jason Auger
  *           Permission is hereby granted, free of charge, to any person obtaining a copy
  *           of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  *           SOFTWARE.
  */
 @isTest
-private class SObjectUtilTest {
+private class SObjectHelperTest {
     static Set<String> PREFERRED_SOBJECTS = new Set<String>{'Account', 'Contact', 'Case', 'Lead', 'Opportunity', 'Order', 'Product2'};
 
     /*  ****************************************  */
@@ -32,7 +32,7 @@ private class SObjectUtilTest {
 
     /**
      * Check to see if the org uses Person Accounts by using two different methods
-     * and then check against what the util class returns
+     * and then check against what the helper class returns
      */
     @isTest
     static void testOrgUsesPersonAccounts() {
@@ -50,10 +50,10 @@ private class SObjectUtilTest {
 
         Boolean paCheckMethodTwo = Schema.sObjectType.Account.fields.getMap().containsKey('isPersonAccount');
 
-        Boolean paCheckUtilClass = SObjectUtil.orgUsesPersonAccounts();
+        Boolean paCheckHelperClass = SObjectHelper.orgUsesPersonAccounts();
 
-        System.assertEquals(paCheckUtilClass, paCheckMethodOne);
-        System.assertEquals(paCheckUtilClass, paCheckMethodTwo);
+        System.assertEquals(paCheckHelperClass, paCheckMethodOne);
+        System.assertEquals(paCheckHelperClass, paCheckMethodTwo);
     }
 
 
@@ -63,7 +63,7 @@ private class SObjectUtilTest {
     @isTest
     static void testGetSetOfOrgSObjects() {
         //  Populate the set
-        Set<String> orgSObjects = SObjectUtil.getSetOfOrgSObjects();
+        Set<String> orgSObjects = SObjectHelper.getSetOfOrgSObjects();
 
         //  We know there are standard objects, so the set should have at least one entry
         System.assert(orgSObjects.size() > 0);
@@ -81,13 +81,13 @@ private class SObjectUtilTest {
 
 
     /**
-     * Tests to see that we can successfully create a util instance for a valid SObject,
-     * and that an error is thrown when trying to create a util instance for an invalid object
+     * Tests to see that we can successfully create a helper instance for a valid SObject,
+     * and that an error is thrown when trying to create a helper instance for an invalid object
      */
     @isTest
     static void testConstructorSuccessAndFail() {
         String sObjectAPINameToTest = null;
-        Set<String> retrievedSObjs = SObjectUtil.getSetOfOrgSObjects();
+        Set<String> retrievedSObjs = SObjectHelper.getSetOfOrgSObjects();
         for (String sObj : PREFERRED_SOBJECTS) {
             if (retrievedSObjs.contains(sObj)) {
                 sObjectAPINameToTest = sObj;
@@ -99,23 +99,23 @@ private class SObjectUtilTest {
         Boolean resultOfPassTest = null;
         String exceptionPass = '';
         try {
-            SObjectUtil utilTestPass = SObjectUtil.get(sObjectAPINameToTest);
+            SObjectHelper helperTestPass = SObjectHelper.get(sObjectAPINameToTest);
             resultOfPassTest = true;
         } catch (Exception e) {
             resultOfPassTest = false;
             exceptionPass = e.getMessage();
         }
-        System.assertEquals(true, resultOfPassTest, 'Could not create SObjectUtil class for SObject: ' + sObjectAPINameToTest + '. Error: ' + exceptionPass);
+        System.assertEquals(true, resultOfPassTest, 'Could not create SObjectHelper class for SObject: ' + sObjectAPINameToTest + '. Error: ' + exceptionPass);
 
         String sObjFail = sObjectAPINameToTest + '__Fail';
         Boolean resultOfFailTest = null;
         try {
-            SObjectUtil utilTestFail = SObjectUtil.get(sObjFail);
+            SObjectHelper helperTestFail = SObjectHelper.get(sObjFail);
             resultOfFailTest = true;
         } catch (Exception e) {
             resultOfFailTest = false;
         }
-        System.assertEquals(false, resultOfFailTest, 'The SObjectUtil class was successfully created for: ' + sObjFail + ' when it should have failed.');
+        System.assertEquals(false, resultOfFailTest, 'The SObjectHelper class was successfully created for: ' + sObjFail + ' when it should have failed.');
     }
 
 
@@ -127,7 +127,7 @@ private class SObjectUtilTest {
     static void testPopulateMapRecordTypesZero() {
         String sObjectAPINameToTest = null;
         Set<String> sObjectsWithRts = getSObjectsWithRecordTypes();
-        Set<String> retrievedSObjs = SObjectUtil.getSetOfOrgSObjects();
+        Set<String> retrievedSObjs = SObjectHelper.getSetOfOrgSObjects();
 
         //  All SObjects in the sObjectsWithRts should be in retrievedSObjs
         for (String sObjToRemove : sObjectsWithRts) {
@@ -147,18 +147,18 @@ private class SObjectUtilTest {
         }
 
         //  Get the info and do the asserts
-        SObjectUtil testSObjUtil = SObjectUtil.get(sObjectAPINameToTest);
-        Integer testSObjUtilRtSize = testSObjUtil.mapRecordTypeNameToId.keySet().size();
+        SObjectHelper testSObjHelper = SObjectHelper.get(sObjectAPINameToTest);
+        Integer testSObjHelperRtSize = testSObjHelper.mapRecordTypeNameToId.keySet().size();
         List<RecordType> querySObjRts = [
             SELECT Id, Name
             FROM RecordType
             WHERE SObjectType = :sObjectAPINameToTest
         ];
 
-        System.assertEquals(querySObjRts.size(), testSObjUtil.mapRecordTypeNameToId.keySet().size());
+        System.assertEquals(querySObjRts.size(), testSObjHelper.mapRecordTypeNameToId.keySet().size());
         for (RecordType rt : querySObjRts) {
-            System.assert(testSObjUtil.mapRecordTypeNameToId.keySet().contains(rt.Name));
-            System.assertEquals(rt.Id, testSObjUtil.mapRecordTypeNameToId.get(rt.Name));
+            System.assert(testSObjHelper.mapRecordTypeNameToId.keySet().contains(rt.Name));
+            System.assertEquals(rt.Id, testSObjHelper.mapRecordTypeNameToId.get(rt.Name));
         }
     }
 
@@ -192,18 +192,18 @@ private class SObjectUtilTest {
             System.assertNotEquals(null, sObjectAPINameToTest);
 
             //  Do the asserts
-            SObjectUtil testSObjUtil = SObjectUtil.get(sObjectAPINameToTest);
-            Integer testSObjUtilRtSize = testSObjUtil.mapRecordTypeNameToId.keySet().size();
+            SObjectHelper testSObjHelper = SObjectHelper.get(sObjectAPINameToTest);
+            Integer testSObjHelperRtSize = testSObjHelper.mapRecordTypeNameToId.keySet().size();
             List<RecordType> querySObjRts = [
                 SELECT Id, Name
                 FROM RecordType
                 WHERE SObjectType = :sObjectAPINameToTest
             ];
 
-            System.assertEquals(querySObjRts.size(), testSObjUtil.mapRecordTypeNameToId.keySet().size());
+            System.assertEquals(querySObjRts.size(), testSObjHelper.mapRecordTypeNameToId.keySet().size());
             for (RecordType rt : querySObjRts) {
-                System.assert(testSObjUtil.mapRecordTypeNameToId.keySet().contains(rt.Name));
-                System.assertEquals(rt.Id, testSObjUtil.mapRecordTypeNameToId.get(rt.Name));
+                System.assert(testSObjHelper.mapRecordTypeNameToId.keySet().contains(rt.Name));
+                System.assertEquals(rt.Id, testSObjHelper.mapRecordTypeNameToId.get(rt.Name));
             }
 
         } else {
@@ -213,7 +213,7 @@ private class SObjectUtilTest {
 
 
     /**
-     * Tests to see that the select all string generated by the util contains all the same fields
+     * Tests to see that the select all string generated by the helper contains all the same fields
      * as manually queried from the org
      */
     @isTest
@@ -228,7 +228,7 @@ private class SObjectUtilTest {
         }
         System.assertNotEquals(null, sObjectAPINameToTest, 'No SObject to test.'); //  Make sure there is an object to test
 
-        SObjectUtil sObjToTest = SObjectUtil.get(sObjectAPINameToTest);
+        SObjectHelper sObjToTest = SObjectHelper.get(sObjectAPINameToTest);
         System.assertNotEquals(null, sObjToTest);   //  Make sure the new object is not a null value
 
         List<String> sObjFieldList = new List<String>();
@@ -275,49 +275,49 @@ private class SObjectUtilTest {
     @isTest
     static void testSelectAllStringRelatedObject() {
         String sObjectNameToTest = 'Contract';
-        SObjectUtil contractUtil = SObjectUtil.get(sObjectNameToTest);
+        SObjectHelper contractHelper = SObjectHelper.get(sObjectNameToTest);
 
         //  We know that by default the address fields that are queried using Schema.SObjectType.getDescribe()
         //  have both billing and shipping fields, however you may not be able to query the shipping fields
-        System.assertNotEquals(null, contractUtil.selectAllString);
-        System.assert(contractUtil.selectAllString.containsIgnoreCase('billingaddress'));
-        System.assert(!contractUtil.selectAllString.containsIgnoreCase('ShippingAddress'));
+        System.assertNotEquals(null, contractHelper.selectAllString);
+        System.assert(contractHelper.selectAllString.containsIgnoreCase('billingaddress'));
+        System.assert(!contractHelper.selectAllString.containsIgnoreCase('ShippingAddress'));
 
         //  Next we want to make sure that we can get the fields for a lookup on Contract
         //  Account should be a default lookup field on Contract, but we need to use AccountId
         //  for the field name
-        String accountLookupQueryString = contractUtil.createQueryStringForRelatedSObject('AccountId');
+        String accountLookupQueryString = contractHelper.createQueryStringForRelatedSObject('AccountId');
         System.assertNotEquals(null, accountLookupQueryString);
 
         Set<String> setObjects = new Set<String>{'AccountId', 'OwnerId'};
         List<String> listObjects = new List<String>{'AccountId', 'OwnerId'};
-        System.assertEquals(contractUtil.createQueryStringForRelatedSObjects(setObjects), contractUtil.createQueryStringForRelatedSObjects(listObjects));
+        System.assertEquals(contractHelper.createQueryStringForRelatedSObjects(setObjects), contractHelper.createQueryStringForRelatedSObjects(listObjects));
     }
 
 
     /**
      * Tests that the required fields set is populated, all all fields in the set are
-     * also listed as keys in SObjectUtil.mapDevNameToType. Using the Account SObject
+     * also listed as keys in SObjectHelper.mapDevNameToType. Using the Account SObject
      * at a minimum the following fields are required: Id, Name, OwnerId, CreatedById,
      * CreatedDate, LastModifiedById, LastModifiedDate
      */
     @isTest
     static void testRequiredFieldsSet() {
-        SObjectUtil accountUtil = SObjectUtil.get('Account');
+        SObjectHelper accountHelper = SObjectHelper.get('Account');
 
-        Integer expectedRequiredFields = accountUtil.fieldsRequired.size();
+        Integer expectedRequiredFields = accountHelper.fieldsRequired.size();
         Integer countedExistingFields = 0;
 
-        for (String field : accountUtil.mapDevNameToType.keySet()) {
-            if (accountUtil.fieldsRequired.contains(field)) {
+        for (String field : accountHelper.mapDevNameToType.keySet()) {
+            if (accountHelper.fieldsRequired.contains(field)) {
                 countedExistingFields += 1 ;
             }
         }
 
-        System.assertNotEquals(null, accountUtil.fieldsRequired);
+        System.assertNotEquals(null, accountHelper.fieldsRequired);
         System.assertNotEquals(0, expectedRequiredFields);
-        System.assert(accountUtil.fieldsRequired.contains('Id'));
-        System.assert(accountUtil.fieldsRequired.contains('Name'));
+        System.assert(accountHelper.fieldsRequired.contains('Id'));
+        System.assert(accountHelper.fieldsRequired.contains('Name'));
         System.assertEquals(expectedRequiredFields, countedExistingFields);
     }
 
@@ -328,13 +328,13 @@ private class SObjectUtilTest {
     @isTest
     static void testLookupQueryStringPopulate() {
         //  Setup
-        SObjectUtil contractUtil = SObjectUtil.get('Contract');
+        SObjectHelper contractHelper = SObjectHelper.get('Contract');
         String sObjectNameFail = 'Account';
         String sObjectNamePass = 'AccountId';
 
         //  Test
-        String returnStringFail = contractUtil.createQueryStringForRelatedSObject(sObjectNameFail);
-        String returnStringPass = contractUtil.createQueryStringForRelatedSObject(sObjectnamePass);
+        String returnStringFail = contractHelper.createQueryStringForRelatedSObject(sObjectNameFail);
+        String returnStringPass = contractHelper.createQueryStringForRelatedSObject(sObjectnamePass);
 
         //  Assert
         System.assertEquals('', returnStringFail);
@@ -349,18 +349,18 @@ private class SObjectUtilTest {
      */
     @isTest
     static void testUniqueFieldsSet() {
-        SObjectUtil accountUtil = SObjectUtil.get('Account');
+        SObjectHelper accountHelper = SObjectHelper.get('Account');
 
-        Integer expectedUniqueFields = accountUtil.fieldsUnique.size();
+        Integer expectedUniqueFields = accountHelper.fieldsUnique.size();
         Integer countedExistingFields = 0;
 
-        for (String field : accountUtil.mapDevNameToType.keySet()) {
-            if (accountUtil.fieldsUnique.contains(field)) {
+        for (String field : accountHelper.mapDevNameToType.keySet()) {
+            if (accountHelper.fieldsUnique.contains(field)) {
                 countedExistingFields += 1 ;
             }
         }
 
-        System.assertNotEquals(null, accountUtil.fieldsUnique);
+        System.assertNotEquals(null, accountHelper.fieldsUnique);
         System.assertEquals(expectedUniqueFields, countedExistingFields);
     }
 
@@ -370,16 +370,16 @@ private class SObjectUtilTest {
      */
     @isTest
     static void testGetDefaultRecordTypeId() {
-        SObjectUtil accountUtil = SObjectUtil.get('Account');
-        SObjectUtil contactUtil = SObjectUtil.get('Contact');
+        SObjectHelper accountHelper = SObjectHelper.get('Account');
+        SObjectHelper contactHelper = SObjectHelper.get('Contact');
 
-        System.assertNotEquals(null, accountUtil.getDefaultRecordTypeId());
-        System.assertNotEquals(null, accountUtil.recordTypeIdDefault);
-        System.assertNotEquals(null, accountUtil.recordTypeIdMaster);
+        System.assertNotEquals(null, accountHelper.getDefaultRecordTypeId());
+        System.assertNotEquals(null, accountHelper.recordTypeIdDefault);
+        System.assertNotEquals(null, accountHelper.recordTypeIdMaster);
 
-        System.assertNotEquals(null, contactUtil.getDefaultRecordTypeId());
-        System.assertNotEquals(null, contactUtil.recordTypeIdDefault);
-        System.assertNotEquals(null, contactUtil.recordTypeIdMaster);
+        System.assertNotEquals(null, contactHelper.getDefaultRecordTypeId());
+        System.assertNotEquals(null, contactHelper.recordTypeIdDefault);
+        System.assertNotEquals(null, contactHelper.recordTypeIdMaster);
     }
 
 

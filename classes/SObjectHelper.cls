@@ -1,6 +1,6 @@
 /**
- * @class:   SObjectUtil.cls
- * @test:    SObjectUtilTest.cls
+ * @class:   SObjectHelper.cls
+ * @test:    SObjectHelperTest.cls
  * @author:  Jason Auger
  * @github:  https://github.com/Varout/SObjectUtil
  * @desc:    The aim of this class is to make it easier to get the needed infromation from SObjects
@@ -25,9 +25,9 @@
  *           OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *           SOFTWARE.
  */
-public with sharing class SObjectUtil {
+public with sharing class SObjectHelper {
 
-    public class SObjectUtilException extends Exception{}
+    public class SObjectHelperException extends Exception{}
 
     final private Set<String> ENUM_LOOKUPS = new Set<String>{'REFERENCE'};
     final private Set<String> ENUM_PICKLISTS = new Set<String>{'PICKLIST', 'MULTIPICKLIST'};
@@ -56,16 +56,16 @@ public with sharing class SObjectUtil {
     public Map<String, String> mapFieldNameToSObjectType { get; private set; }              //  Maps the looup field name to the SObject
     public Map<String, Set<String>> mapRelatedSObjectFields { get; private set; }           //  Used for Lookups and MD-Lookups. Maps lookup field name to the set of fields on that object
 
-    private static Map<String, SObjectUtil> mapSObjectUtils = new Map<String, SObjectUtil>();
+    private static Map<String, SObjectHelper> mapSObjectHelpers = new Map<String, SObjectHelper>();
 
-    public static SObjectUtil get(String objectName) {
-        if (mapSObjectUtils.containsKey(objectName) == false) {
-            mapSObjectUtils.put(objectName, new SObjectUtil(objectName));
+    public static SObjectHelper get(String objectName) {
+        if (mapSObjectHelpers.containsKey(objectName) == false) {
+            mapSObjectHelpers.put(objectName, new SObjectHelper(objectName));
         }
-        return mapSObjectUtils.get(objectName);
+        return mapSObjectHelpers.get(objectName);
     }
 
-    private SObjectUtil(String reqSObjectType) {
+    private SObjectHelper(String reqSObjectType) {
         //  Some standard SObjects don't like certain fields to be queried
         //  Will likely be added to over time. Is public in case fields are found
         //  with an object and they can be added to the filter here
@@ -78,13 +78,13 @@ public with sharing class SObjectUtil {
         try {
             this.theSObjectDescribe = Schema.getGlobalDescribe().get(reqSObjectType);
         } catch (Exception e) {
-            throw new SObjectUtilException('An error occurred: ' + e.getMessage());
+            throw new SObjectHelperException('An error occurred: ' + e.getMessage());
         }
         if (this.theSObjectDescribe == null) {
             String errorString = '';
             errorString += 'The SObject: "' + reqSObjectType + '" does not exist in this org. ';
             errorString += 'If you are using a custom object, remember to add the __c at the end. ';
-            throw new SObjectUtilException(errorString);
+            throw new SObjectHelperException(errorString);
         }
 
         this.setLookupDevNames = new Set<String>();
@@ -101,7 +101,7 @@ public with sharing class SObjectUtil {
             this.populateMapFieldInformation(reqSObjectType);
             this.populateRecordTypeInformation(reqSObjectType);
         } catch (Exception e) {
-            throw new SOBjectUtilException('Could not set up data for SObject: ' + reqSObjectType + '. An error occurred: ' + e.getMessage());
+            throw new SObjectHelperException('Could not set up data for SObject: ' + reqSObjectType + '. An error occurred: ' + e.getMessage());
         }
     }
 
@@ -209,7 +209,7 @@ public with sharing class SObjectUtil {
             List<Schema.DescribeSObjectResult> tempSObjResults = Schema.describeSObjects(new List<String>{theSObjectType});
             sObjectResult = tempSObjResults[0];
         } catch (Exception e) {
-            System.debug('SObjectUtil: Could not populate record types using Schema for: ' + theSObjectType);
+            System.debug('SObjectHelper: Could not populate record types using Schema for: ' + theSObjectType);
             System.debug(e.getMessage());
             return;
         }
