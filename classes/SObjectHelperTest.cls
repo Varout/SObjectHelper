@@ -1,7 +1,6 @@
 /**
  * @class:   SObjectHelperTest.cls
  * @author:  Jason Auger
- * @github:  https://github.com/Varout/SObjectUtil
  * @desc:    Test class for SObjectHelper.cls
  * @licence: Copyright (c) 2020, Jason Auger
  *           Permission is hereby granted, free of charge, to any person obtaining a copy
