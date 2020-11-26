@@ -3,7 +3,7 @@
 ## What's It About?
 
 I wanted to be able to get certain bits of information on the fly using code with Salesforce. I was doing a lot of work with picklists at the time and wanted to put something together to help get the information I needed, faster.
-This util class helps to get most useful information about an SObject. Including:
+This util class helps to get most useful information about an SObject, essentially making it easier to get information from the `Schema` object. Including:
 - Record types: Id and DeveloperName
 - Picklists, and the options available for each picklist (normal and multi)
 - A list of the object's fields and their types
@@ -53,31 +53,54 @@ The util also gets information about available SObjects and if the Salesforce Or
 
 ** Inititalise **
 
-```SObjectUtil accountUtil = new SObjectUtil('Account');```
-```SObjectUtil customObjectUtil = new SObjectUtil('MyCustomObject__c');```
+```Java
+SObjectUtil accountUtil = new SObjectUtil('Account');
+```
+
+```Java
+SObjectUtil customObjectUtil = new SObjectUtil('MyCustomObject__c');
+```
 
 
 ** Field String **
+
 For the main SObject that the util has been initiated with, this will return all fields for only that object:
-```String accountFields = accountUtil.selectAllString;```
+
+```Java
+String accountFields = accountUtil.selectAllString;
+```
 
 To get fields for all or specific objects that have Lookups or Master-Detail Lookups on this SObject:
-```String contactFieldsOnAccount = accountUtil.createQueryStringForRelatedSObject('ContactId');```
-```String customObjectFieldsOnAccount = accountUtil.createQueryStringForRelatedSObject('CustomObject__c');```
+
+```Java
+String contactFieldsOnAccount = accountUtil.createQueryStringForRelatedSObject('ContactId');
+```
+
+```Java
+String customObjectFieldsOnAccount = accountUtil.createQueryStringForRelatedSObject('CustomObject__c');
+```
 
 You can group multiple objects at time in a Set or List
-```List<String> sobjs = new List<String>{'ContactId', 'CustomObject__c'};```
-```String queryString = accountUtil.createQueryStringForRelatedObjects(sobjs);```
+
+```Java
+List<String> sobjs = new List<String>{'ContactId', 'CustomObject__c'};
+```
+
+```Java
+String queryString = accountUtil.createQueryStringForRelatedObjects(sobjs);
+```
 
 _Example_
 
 ```Java
 SObjectUtil contractUtil = new SObjectUtil('Contract');
 Set<String> testSet = new Set<String>{'AccountId', 'CustoObj__c'};
+
 String queryString = '';
-queryString += 'SELECT ' + animalUtil.selectAllString + ',\n';
-queryString += animalUtil.createQueryStringForRelatedSObjects(testSet) + '\n';
+queryString += 'SELECT ' + contractUtil.selectAllString + ',\n';
+queryString += contractUtil.createQueryStringForRelatedSObjects(testSet) + '\n';
 queryString += ' FROM Contract';
+
 List<SObject> theResults = Database.query(queryString);
 ```
 
