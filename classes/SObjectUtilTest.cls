@@ -1,6 +1,7 @@
 /**
  * @class:   SObjectUtilTest.cls
  * @author:  Jason Auger
+ * @github:  https://github.com/Varout/SObjectUtil
  * @desc:    Test class for SObjectUtil.cls
  * @licence: Copyright (c) 2020, Jason Auger
  *           Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -9,10 +10,10 @@
  *           to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *           copies of the Software, and to permit persons to whom the Software is
  *           furnished to do so, subject to the following conditions:
- *           
+ *
  *           The above copyright notice and this permission notice shall be included in all
  *           copies or substantial portions of the Software.
- *           
+ *
  *           THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *           IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *           FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,7 +24,7 @@
  */
 @isTest
 private class SObjectUtilTest {
-    static Set<String> PREFERRED_SOBJECTS = new Set<String>{'Account', 'Contact', 'Case', 'Lead', 'Opportunity', 'Order', 'Product2', 'Quote'};
+    static Set<String> PREFERRED_SOBJECTS = new Set<String>{'Account', 'Contact', 'Case', 'Lead', 'Opportunity', 'Order', 'Product2'};
 
     /*  ****************************************  */
     /*            Unit Test Functions             */
@@ -69,6 +70,13 @@ private class SObjectUtilTest {
         //  We also know there are a list of standard Salesforce objects which can be checked
         //  to see if they are in the set, but in the unlikely event they change, they won't
         //  be checked here
+
+        System.debug(orgSObjects);
+        //  Check that the queries list contains at least all the SObjects in the preferred list
+        for (String sObj : PREFERRED_SOBJECTS) {
+            System.debug(sObj);
+            System.assert(orgSObjects.contains(sObj));
+        }
     }
 
 
@@ -91,7 +99,7 @@ private class SObjectUtilTest {
         Boolean resultOfPassTest = null;
         String exceptionPass = '';
         try {
-            SObjectUtil utilTestPass = new SObjectUtil(sObjectAPINameToTest);
+            SObjectUtil utilTestPass = SObjectUtil.get(sObjectAPINameToTest);
             resultOfPassTest = true;
         } catch (Exception e) {
             resultOfPassTest = false;
@@ -102,7 +110,7 @@ private class SObjectUtilTest {
         String sObjFail = sObjectAPINameToTest + '__Fail';
         Boolean resultOfFailTest = null;
         try {
-            SObjectUtil utilTestFail = new SObjectUtil(sObjFail);
+            SObjectUtil utilTestFail = SObjectUtil.get(sObjFail);
             resultOfFailTest = true;
         } catch (Exception e) {
             resultOfFailTest = false;
@@ -139,7 +147,7 @@ private class SObjectUtilTest {
         }
 
         //  Get the info and do the asserts
-        SObjectUtil testSObjUtil = new SObjectUtil(sObjectAPINameToTest);
+        SObjectUtil testSObjUtil = SObjectUtil.get(sObjectAPINameToTest);
         Integer testSObjUtilRtSize = testSObjUtil.mapRecordTypeNameToId.keySet().size();
         List<RecordType> querySObjRts = [
             SELECT Id, Name
@@ -182,9 +190,9 @@ private class SObjectUtilTest {
                 }
             }
             System.assertNotEquals(null, sObjectAPINameToTest);
-    
+
             //  Do the asserts
-            SObjectUtil testSObjUtil = new SObjectUtil(sObjectAPINameToTest);
+            SObjectUtil testSObjUtil = SObjectUtil.get(sObjectAPINameToTest);
             Integer testSObjUtilRtSize = testSObjUtil.mapRecordTypeNameToId.keySet().size();
             List<RecordType> querySObjRts = [
                 SELECT Id, Name
@@ -220,7 +228,7 @@ private class SObjectUtilTest {
         }
         System.assertNotEquals(null, sObjectAPINameToTest, 'No SObject to test.'); //  Make sure there is an object to test
 
-        SObjectUtil sObjToTest = new SObjectUtil(sObjectAPINameToTest);
+        SObjectUtil sObjToTest = SObjectUtil.get(sObjectAPINameToTest);
         System.assertNotEquals(null, sObjToTest);   //  Make sure the new object is not a null value
 
         List<String> sObjFieldList = new List<String>();
@@ -267,7 +275,7 @@ private class SObjectUtilTest {
     @isTest
     static void testSelectAllStringRelatedObject() {
         String sObjectNameToTest = 'Contract';
-        SObjectUtil contractUtil = new SOBjectUtil(sObjectNameToTest);
+        SObjectUtil contractUtil = SObjectUtil.get(sObjectNameToTest);
 
         //  We know that by default the address fields that are queried using Schema.SObjectType.getDescribe()
         //  have both billing and shipping fields, however you may not be able to query the shipping fields
@@ -295,7 +303,7 @@ private class SObjectUtilTest {
      */
     @isTest
     static void testRequiredFieldsSet() {
-        SObjectUtil accountUtil = new SObjectUtil('Account');
+        SObjectUtil accountUtil = SObjectUtil.get('Account');
 
         Integer expectedRequiredFields = accountUtil.fieldsRequired.size();
         Integer countedExistingFields = 0;
@@ -320,7 +328,7 @@ private class SObjectUtilTest {
     @isTest
     static void testLookupQueryStringPopulate() {
         //  Setup
-        SObjectUtil contractUtil = new SObjectUtil('Contract');
+        SObjectUtil contractUtil = SObjectUtil.get('Contract');
         String sObjectNameFail = 'Account';
         String sObjectNamePass = 'AccountId';
 
@@ -341,7 +349,7 @@ private class SObjectUtilTest {
      */
     @isTest
     static void testUniqueFieldsSet() {
-        SObjectUtil accountUtil = new SObjectUtil('Account');
+        SObjectUtil accountUtil = SObjectUtil.get('Account');
 
         Integer expectedUniqueFields = accountUtil.fieldsUnique.size();
         Integer countedExistingFields = 0;
@@ -362,8 +370,8 @@ private class SObjectUtilTest {
      */
     @isTest
     static void testGetDefaultRecordTypeId() {
-        SObjectUtil accountUtil = new SObjectUtil('Account');
-        SObjectUtil contactUtil = new SObjectUtil('Contact');
+        SObjectUtil accountUtil = SObjectUtil.get('Account');
+        SObjectUtil contactUtil = SObjectUtil.get('Contact');
 
         System.assertNotEquals(null, accountUtil.getDefaultRecordTypeId());
         System.assertNotEquals(null, accountUtil.recordTypeIdDefault);
