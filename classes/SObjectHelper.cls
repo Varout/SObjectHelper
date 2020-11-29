@@ -2,6 +2,7 @@
  * @class:   SObjectHelper.cls
  * @test:    SObjectHelperTest.cls
  * @author:  Jason Auger
+ * @github:  https://github.com/Varout/SObjectHelper
  * @desc:    The aim of this class is to make it easier to get the needed infromation from SObjects
  *           without having to go into the finer details of working with the Schema object and
  *           the array of get/describe functions that go with it.
