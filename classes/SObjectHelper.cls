@@ -1,9 +1,9 @@
 /**
- * @class:   SObjectUtil.cls
- * @test:    SObjectUtilTest.cls
+ * @class:   SObjectHelper.cls
+ * @test:    SObjectHelperTest.cls
  * @author:  Jason Auger
  * @desc:    The aim of this class is to make it easier to get the needed infromation from SObjects
- *           without having to go into the finer details of working with the Schema object and 
+ *           without having to go into the finer details of working with the Schema object and
  *           the array of get/describe functions that go with it.
  * @licence: Copyright (c) 2020, Jason Auger
  *           Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -12,10 +12,10 @@
  *           to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *           copies of the Software, and to permit persons to whom the Software is
  *           furnished to do so, subject to the following conditions:
- *           
+ *
  *           The above copyright notice and this permission notice shall be included in all
  *           copies or substantial portions of the Software.
- *           
+ *
  *           THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *           IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *           FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,9 +24,9 @@
  *           OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *           SOFTWARE.
  */
-public with sharing class SObjectUtil {
+public with sharing class SObjectHelper {
 
-    public class SObjectUtilException extends Exception{}
+    public class SObjectHelperException extends Exception{}
 
     final private Set<String> ENUM_LOOKUPS = new Set<String>{'REFERENCE'};
     final private Set<String> ENUM_PICKLISTS = new Set<String>{'PICKLIST', 'MULTIPICKLIST'};
@@ -39,44 +39,51 @@ public with sharing class SObjectUtil {
     };
     public Map<String, Set<String>> evilObjectFieldNames = new Map<String, Set<String>>();
 
-    private SObjectType theSObjectDescribe { get; private set; }
-    public Id recordTypeIdDefault { get; private set; }
-    public Id recordTypeIdMaster { get; private set; }
-    public Set<String> setLookupDevNames { get; set; }
-    public String selectAllString { get; private set; }                 //  A comma separated string of all fields on the SObject. Intended to act as * for SOQL queries
-    public Set<String> fieldsRequired { get; private set; }             //  The DeveloperNames of required fields on the SObject level
-    public Set<String> fieldsUnique { get; private set; }               //  The DeveloperNames of fields that need to be unique to create or update a record
+    private SObjectType theSObjectDescribe { get; set; }
+    public Id recordTypeIdDefault          { get; private set; }
+    public Id recordTypeIdMaster           { get; private set; }
+    public Set<String> setLookupDevNames   { get; set; }
+    public String selectAllString          { get; private set; }        //  A comma separated string of all fields on the SObject. Intended to act as * for SOQL queries
+    public Set<String> fieldsRequired      { get; private set; }        //  The DeveloperNames of required fields on the SObject level
+    public Set<String> fieldsUnique        { get; private set; }        //  The DeveloperNames of fields that need to be unique to create or update a record
     public Map<String, Id> mapRecordTypeNameToId { get; private set; }  //  Maps the DeveloperName of a record type to its Id
-    public Map<String, String> mapDevNameToType { get; private set; }   //  Maps the DeveloperName of a field to its field type (See: ENUM_FIELD_TYPES)
+    public Map<String, String> mapDevNameToType  { get; private set; }  //  Maps the DeveloperName of a field to its field type (See: ENUM_FIELD_TYPES)
     //  Schema.PicklistEntry function information: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_class_Schema_PicklistEntry.htm#apex_class_Schema_PicklistEntry
     public Map<String, List<Schema.PicklistEntry>> mapPicklistValues { get; private set; }  //  Maps the DeveloperName of a picklist or multipicklist to its PicklistEntry vales
     public Map<String, Set<String>> mapLookupDevNameToFields { get; private set; }          //  Maps the DeveloperName of a lookup field to a Set of strings which are the DeveloperNames of fields on the related SObject (Not automatically populated)
 
-    public Map<String, Set<String>> mapRelatedSObjectFields { get; private set; }           //  Used for Lookups and MD-Lookups. Maps lookup field name to the set of fields on that object
     public Map<String, String> mapFieldNameToSObjectType { get; private set; }              //  Maps the looup field name to the SObject
+    public Map<String, Set<String>> mapRelatedSObjectFields { get; private set; }           //  Used for Lookups and MD-Lookups. Maps lookup field name to the set of fields on that object
 
+    private static Map<String, SObjectHelper> mapSObjectHelpers = new Map<String, SObjectHelper>();
 
-    public SObjectUtil(String reqSObjectType) {
+    public static SObjectHelper get(String objectName) {
+        if (mapSObjectHelpers.containsKey(objectName) == false) {
+            mapSObjectHelpers.put(objectName, new SObjectHelper(objectName));
+        }
+        return mapSObjectHelpers.get(objectName);
+    }
+
+    private SObjectHelper(String reqSObjectType) {
         //  Some standard SObjects don't like certain fields to be queried
         //  Will likely be added to over time. Is public in case fields are found
         //  with an object and they can be added to the filter here
         this.evilObjectFieldNames.put('Contract', new Set<String>{
-            'ShippingStreet', 'ShippingCity', 'ShippingState', 'ShippingPostalCode', 'ShippingCountry', 'ShippingLatitude', 
+            'ShippingStreet', 'ShippingCity', 'ShippingState', 'ShippingPostalCode', 'ShippingCountry', 'ShippingLatitude',
             'ShippingLongitude', 'ShippingGeocodeAccuracy', 'ShippingAddress', 'Name'});
-    
 
         //  Now back to normal
         Map<String, Schema.SObjectType> mapOrgSchema = Schema.getGlobalDescribe();
         try {
             this.theSObjectDescribe = Schema.getGlobalDescribe().get(reqSObjectType);
         } catch (Exception e) {
-            throw new SObjectUtilException('An error occurred: ' + e.getMessage());
+            throw new SObjectHelperException('An error occurred: ' + e.getMessage());
         }
         if (this.theSObjectDescribe == null) {
             String errorString = '';
             errorString += 'The SObject: "' + reqSObjectType + '" does not exist in this org. ';
             errorString += 'If you are using a custom object, remember to add the __c at the end. ';
-            throw new SObjectUtilException(errorString);
+            throw new SObjectHelperException(errorString);
         }
 
         this.setLookupDevNames = new Set<String>();
@@ -87,13 +94,13 @@ public with sharing class SObjectUtil {
         this.mapLookupDevNameToFields  = new Map<String, Set<String>>();
         this.mapRelatedSObjectFields   = new Map<String, Set<String>>();
         this.mapFieldNameToSObjectType = new Map<String, String>();
-        
+
         //  Populate data for the main SObject
         try {
             this.populateMapFieldInformation(reqSObjectType);
             this.populateRecordTypeInformation(reqSObjectType);
         } catch (Exception e) {
-            throw new SOBjectUtilException('Could not set up data for SObject: ' + reqSObjectType + '. An error occurred: ' + e.getMessage());
+            throw new SObjectHelperException('Could not set up data for SObject: ' + reqSObjectType + '. An error occurred: ' + e.getMessage());
         }
     }
 
@@ -103,7 +110,7 @@ public with sharing class SObjectUtil {
     /*  ****************************************  */
 
     /**
-     * Populates the public variables: 
+     * Populates the public variables:
      * - mapDevNameToType
      * - requiredFields
      * @param   String. API Name of the SObject to populate field name and type inforation for.
@@ -201,7 +208,7 @@ public with sharing class SObjectUtil {
             List<Schema.DescribeSObjectResult> tempSObjResults = Schema.describeSObjects(new List<String>{theSObjectType});
             sObjectResult = tempSObjResults[0];
         } catch (Exception e) {
-            System.debug('SObjectUtil: Could not populate record types using Schema for: ' + theSObjectType);
+            System.debug('SObjectHelper: Could not populate record types using Schema for: ' + theSObjectType);
             System.debug(e.getMessage());
             return;
         }
@@ -211,10 +218,12 @@ public with sharing class SObjectUtil {
             if (rti.isDefaultRecordTypeMapping()) {
                 this.recordTypeIdDefault = rti.getRecordTypeId();
             }
+
             //  Default record type for the SObject. Used as a fall back
             if (rti.isMaster()) {
                 this.recordTypeIdMaster = rti.getRecordTypeId();
             }
+
             //  Populate the map for DeveloperName to RecordTypeId
             if (rti.getDeveloperName() != 'Master') {   //  Don't need as this isn't returned when using SOQL
                 this.mapRecordTypeNameToId.put(rti.getDeveloperName(), rti.getRecordTypeId());
@@ -245,6 +254,7 @@ public with sharing class SObjectUtil {
         for (String fieldName : this.mapRelatedSObjectFields.get(sObjectName)) {
             queryString += passedSObjFieldName.replace('__c', '__r').removeEndIgnoreCase('id') + '.' + fieldName.capitalize() + ',';
         }
+
         return queryString.removeEnd(',');
     }
 
@@ -257,6 +267,7 @@ public with sharing class SObjectUtil {
         for (String sObj : sObjectNames) {
             queryString += this.createQueryStringForRelatedSObject(sObj) + ',';
         }
+
         return queryString.removeEnd(',');
     }
 
@@ -267,6 +278,7 @@ public with sharing class SObjectUtil {
     public String createQueryStringForRelatedSObjects(List<String> sObjectNames) {
         Set<String> setSObjectNames = new Set<String>();
         setSObjectNames.addAll(sObjectNames);
+
         return this.createQueryStringForRelatedSObjects(setSObjectNames);
     }
 
@@ -282,6 +294,7 @@ public with sharing class SObjectUtil {
         } else if (this.recordTypeIdMaster != null) {
             return this.recordTypeIdMaster;
         }
+
         //  I don't really expect this to ever happen, just a catch-all
         return null;
     }
@@ -301,6 +314,7 @@ public with sharing class SObjectUtil {
         for (Schema.SObjectType sObjType : Schema.getGlobalDescribe().values()) {
             sObjects.add(String.valueOf(sObjType));
         }
+
         return sObjects;
     }
 
